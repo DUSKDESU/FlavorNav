@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="match.flavornav.mapper.CommentMapper">
+
+    <resultMap id="CommentResult" type="match.flavornav.entity.Comment">
+        <id property="id" column="id"/>
+        <result property="foodId" column="food_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="userName" column="user_name"/>
+        <result property="userAvatar" column="user_avatar"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="content" column="content"/>
+        <result property="status" column="status"/>
+        <result property="likeCount" column="like_count"/>
+        <result property="dislikeCount" column="dislike_count"/>
+        <result property="replyCount" column="reply_count"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="findByFoodIdAndStatus" resultMap="CommentResult">
+        SELECT c.*, u.avatar as user_avatar
+        FROM comment c
+        LEFT JOIN user u ON c.user_id = u.id
+        WHERE c.food_id = #{foodId} AND c.status = #{status}
+        ORDER BY c.create_time DESC
+    </select>
+
+    <select id="findByFoodId" resultMap="CommentResult">
+        SELECT c.*, u.avatar as user_avatar
+        FROM comment c
+        LEFT JOIN user u ON c.user_id = u.id
+        WHERE c.food_id = #{foodId}
+        ORDER BY c.create_time DESC
+    </select>
+
+    <select id="findById" resultMap="CommentResult">
+        SELECT c.*, u.avatar as user_avatar
+        FROM comment c
+        LEFT JOIN user u ON c.user_id = u.id
+        WHERE c.id = #{id}
+    </select>
+
+    <select id="findByUserId" resultMap="CommentResult">
+        SELECT c.*, u.avatar as user_avatar
+        FROM comment c
+        LEFT JOIN user u ON c.user_id = u.id
+        WHERE c.user_id = #{userId}
+        ORDER BY c.create_time DESC
+    </select>
+
+    <select id="countByFoodId" resultType="int">
+        SELECT COUNT(*) FROM comment WHERE food_id = #{foodId} AND status = 1
+    </select>
+
+    <update id="updateLikeCount">
+        UPDATE comment
+        SET like_count = like_count + #{increment}, update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateReplyCount">
+        UPDATE comment
+        SET reply_count = reply_count + #{increment}, update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <insert id="insert" parameterType="match.flavornav.entity.Comment" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO comment (food_id, user_id, user_name, parent_id, content, status, like_count, dislike_count, reply_count, create_time, update_time)
+        VALUES (#{foodId}, #{userId}, #{userName}, #{parentId}, #{content}, #{status}, 0, 0, 0, NOW(), NOW())
+    </insert>
+
+    <update id="update" parameterType="match.flavornav.entity.Comment">
+        UPDATE comment
+        SET content = #{content}, update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE comment SET status = #{status}, update_time = NOW() WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM comment WHERE id = #{id}
+    </delete>
+</mapper>

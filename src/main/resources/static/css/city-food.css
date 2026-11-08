@@ -1,0 +1,494 @@
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    background: linear-gradient(135deg, #fff5eb 0%, #ffe0c2 50%, #ffb87d 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    color: #333;
+}
+
+.top-nav {
+    background: #ffffff;
+    color: #333;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    height: 60px;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.back-btn-nav {
+    background: #ff6b35;
+    border: none;
+    color: #ffffff;
+    padding: 8px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.back-btn-nav:hover {
+    background: #e85d26;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+}
+
+.city-title {
+    font-size: 18px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 50%, #ffa07a 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 1px;
+    font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+    white-space: nowrap;
+}
+
+.add-food-btn {
+    background: #ff6b35;
+    color: white;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.add-food-btn:hover {
+    background: #e85d26;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+}
+
+.main-container {
+    position: relative;
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.food-card-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+.empty-state {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    padding: 80px 20px;
+    color: #999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+}
+
+.empty-state-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+    opacity: 0.4;
+}
+
+.empty-state-text {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #666;
+}
+
+.empty-state-hint {
+    font-size: 14px;
+    color: #999;
+}
+
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(3px);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.modal-content {
+    background: #ffffff;
+    padding: 0;
+    border-radius: 8px;
+    width: 90vw;
+    max-width: 850px;
+    max-height: 90vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    animation: slideIn 0.3s ease-out;
+    display: flex;
+    flex-direction: column;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-header {
+    background: #ffffff;
+    padding: 20px 30px;
+    border-radius: 8px 8px 0 0;
+    color: #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 1px solid #e8e8e8;
+    flex-shrink: 0;
+}
+
+.modal-header h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    color: #333;
+}
+
+.close-btn {
+    background: #f5f5f5;
+    border: 1px solid #e8e8e8;
+    color: #666;
+    font-size: 20px;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+}
+
+.close-btn:hover {
+    background: #ff6b35;
+    border-color: #ff6b35;
+    color: white;
+}
+
+.modal-body {
+    padding: 30px;
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.form-group {
+    margin-bottom: 24px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e8e8e8;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: all 0.25s;
+    background: #ffffff;
+    color: #333;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #ff6b35;
+    box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.1);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-group input[readonly] {
+    background: #f5f5f5;
+    color: #999;
+}
+
+.image-upload-area {
+    border: 2px dashed #e8e8e8;
+    border-radius: 4px;
+    padding: 30px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: #fafafa;
+}
+
+.image-upload-area:hover {
+    background: #fff5f0;
+    border-color: #ff6b35;
+}
+
+.image-upload-area.has-image {
+    border-style: solid;
+    border-color: #ff6b35;
+}
+
+.upload-icon {
+    font-size: 36px;
+    margin-bottom: 10px;
+    opacity: 0.5;
+}
+
+.upload-text {
+    color: #ff6b35;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.upload-hint {
+    color: #999;
+    font-size: 12px;
+    margin-top: 6px;
+}
+
+.image-preview {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 4px;
+    margin-top: 12px;
+    display: none;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #e8e8e8;
+}
+
+.btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s;
+}
+
+.btn-primary {
+    background: #ff6b35;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #e85d26;
+}
+
+.btn-secondary {
+    background: #f5f5f5;
+    color: #666;
+    border: 1px solid #e8e8e8;
+}
+
+.btn-secondary:hover {
+    background: #e8e8e8;
+}
+
+.type-tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.type-tag {
+    display: inline-flex;
+}
+
+.type-tag input[type="radio"] {
+    display: none;
+}
+
+.type-tag span {
+    display: inline-block;
+    padding: 6px 14px;
+    background: #f5f5f5;
+    border: 1px solid #e8e8e8;
+    border-radius: 20px;
+    font-size: 13px;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.3s;
+    user-select: none;
+}
+
+.type-tag input[type="radio"]:checked + span {
+    background: #ff6b35;
+    border-color: #ff6b35;
+    color: #ffffff;
+}
+
+.type-tag span:hover {
+    border-color: #ff6b35;
+    color: #ff6b35;
+}
+
+.type-tag input[type="radio"]:checked + span:hover {
+    background: #e55a2b;
+    border-color: #e55a2b;
+    color: #ffffff;
+}
+
+.custom-type-input {
+    margin-top: 12px;
+}
+
+.custom-type-input input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #e3e5e7;
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.custom-type-input input:focus {
+    border-color: #ff6b35;
+}
+
+.taste-tags-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.taste-category {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.taste-category-label {
+    font-size: 12px;
+    color: #999;
+    font-weight: 500;
+}
+
+.taste-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.taste-tag {
+    display: inline-flex;
+}
+
+.taste-tag input[type="checkbox"] {
+    display: none;
+}
+
+.taste-tag span {
+    display: inline-block;
+    padding: 6px 14px;
+    background: #f5f5f5;
+    border: 1px solid #e8e8e8;
+    border-radius: 20px;
+    font-size: 13px;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.3s;
+    user-select: none;
+}
+
+.taste-tag input[type="checkbox"]:checked + span {
+    background: #ff6b35;
+    border-color: #ff6b35;
+    color: #ffffff;
+}
+
+.taste-tag span:hover {
+    border-color: #ff6b35;
+    color: #ff6b35;
+}
+
+.taste-tag input[type="checkbox"]:checked + span:hover {
+    background: #e55a2b;
+    border-color: #e55a2b;
+    color: #ffffff;
+}
+
+.custom-taste-input {
+    margin-top: 12px;
+}
+
+.custom-taste-input input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #e3e5e7;
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.custom-taste-input input:focus {
+    border-color: #ff6b35;
+}
+
+.food-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+/* ==================== 添加美食表单 ==================== */

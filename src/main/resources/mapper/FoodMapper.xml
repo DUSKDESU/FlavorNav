@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="match.flavornav.mapper.FoodMapper">
+
+    <resultMap id="FoodResult" type="match.flavornav.entity.Food">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="description" column="description"/>
+        <result property="ingredients" column="ingredients"/>
+        <result property="cookingMethod" column="cooking_method"/>
+        <result property="history" column="history"/>
+        <result property="regionId" column="region_id"/>
+        <result property="regionName" column="region_name"/>
+        <result property="imageUrl" column="image_url"/>
+        <result property="userId" column="user_id"/>
+        <result property="userName" column="user_name"/>
+        <result property="userAvatar" column="user_avatar"/>
+        <result property="status" column="status"/>
+        <result property="likeCount" column="like_count"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="taste" column="taste"/>
+        <result property="type" column="type"/>
+    </resultMap>
+
+    <select id="findAll" resultMap="FoodResult">
+        SELECT f.*, u.avatar as user_avatar
+        FROM food f
+        LEFT JOIN user u ON f.user_id = u.id
+        ORDER BY f.create_time DESC
+    </select>
+
+    <select id="findById" resultMap="FoodResult">
+        SELECT f.*, u.avatar as user_avatar
+        FROM food f
+        LEFT JOIN user u ON f.user_id = u.id
+        WHERE f.id = #{id}
+    </select>
+
+    <select id="findByRegionId" resultMap="FoodResult">
+        SELECT f.*, u.avatar as user_avatar
+        FROM food f
+        LEFT JOIN user u ON f.user_id = u.id
+        WHERE f.region_id = #{regionId} AND f.status = 1
+        ORDER BY f.create_time DESC
+    </select>
+
+    <select id="findByUserId" resultMap="FoodResult">
+        SELECT f.*, u.avatar as user_avatar
+        FROM food f
+        LEFT JOIN user u ON f.user_id = u.id
+        WHERE f.user_id = #{userId}
+        ORDER BY f.create_time DESC
+    </select>
+
+    <select id="findByStatus" resultMap="FoodResult">
+        SELECT f.*, u.avatar as user_avatar
+        FROM food f
+        LEFT JOIN user u ON f.user_id = u.id
+        WHERE f.status = #{status}
+        ORDER BY f.create_time DESC
+    </select>
+
+    <select id="search" resultMap="FoodResult">
+        SELECT f.*, r.name as region_name, u.username as user_name, u.avatar as user_avatar
+        FROM food f
+        LEFT JOIN region r ON f.region_id = r.id
+        LEFT JOIN user u ON f.user_id = u.id
+        WHERE f.status = 1
+        <if test="keyword != null and keyword != ''">
+            AND (f.name LIKE CONCAT('%', #{keyword}, '%')
+            OR f.description LIKE CONCAT('%', #{keyword}, '%')
+            OR f.ingredients LIKE CONCAT('%', #{keyword}, '%')
+            OR f.history LIKE CONCAT('%', #{keyword}, '%')
+            OR f.region_name LIKE CONCAT('%', #{keyword}, '%')
+            OR r.name LIKE CONCAT('%', #{keyword}, '%')
+            OR EXISTS (
+                SELECT 1 FROM region rk
+                WHERE rk.name LIKE CONCAT('%', #{keyword}, '%')
+                  AND (r.path = rk.path OR r.path LIKE CONCAT(rk.path, '/%'))
+            ))
+        </if>
+        <if test="regionId != null">
+            AND f.region_id = #{regionId}
+        </if>
+        <if test="types != null and types != ''">
+            AND f.type IN
+            <foreach collection="types.split(',')" item="t" open="(" separator="," close=")">
+                #{t}
+            </foreach>
+        </if>
+        <if test="tastes != null and tastes != ''">
+            AND (
+            <foreach collection="tastes.split(',')" item="t" separator=" OR ">
+                f.taste LIKE CONCAT('%', #{t}, '%')
+            </foreach>
+            )
+        </if>
+        ORDER BY f.create_time DESC
+    </select>
+
+    <select id="findPopularFoods" resultMap="FoodResult">
+        SELECT f.*, r.name as region_name, u.username as user_name, u.avatar as user_avatar
+        FROM food f
+        LEFT JOIN region r ON f.region_id = r.id
+        LEFT JOIN user u ON f.user_id = u.id
+        WHERE f.status = 1
+        ORDER BY
+            <if test="locationKeyword != null and locationKeyword != ''">
+                CASE
+                    WHEN r.name = #{locationKeyword}
+                      OR r.name = CONCAT(#{locationKeyword}, '市')
+                      OR r.name = CONCAT(#{locationKeyword}, '区')
+                      OR r.name = CONCAT(#{locationKeyword}, '县') THEN 0
+                    WHEN r.name LIKE CONCAT('%', #{locationKeyword}, '%') THEN 1
+                    ELSE 2
+                END,
+            </if>
+            f.like_count DESC, f.create_time DESC
+        LIMIT #{limit}
+    </select>
+
+    <insert id="insert" parameterType="match.flavornav.entity.Food" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO food (name, description, ingredients, cooking_method, history, region_id, region_name,
+                         image_url, user_id, user_name, status, create_time, update_time, taste, type)
+        VALUES (#{name}, #{description}, #{ingredients}, #{cookingMethod}, #{history}, #{regionId}, #{regionName},
+                #{imageUrl}, #{userId}, #{userName}, #{status}, NOW(), NOW(), #{taste}, #{type})
+    </insert>
+
+    <update id="update" parameterType="match.flavornav.entity.Food">
+        UPDATE food
+        SET name = #{name}, description = #{description}, ingredients = #{ingredients},
+            cooking_method = #{cookingMethod}, history = #{history}, region_id = #{regionId},
+            region_name = #{regionName}, image_url = #{imageUrl}, user_id = #{userId},
+            user_name = #{userName}, status = #{status}, like_count = #{likeCount}, update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE food SET status = #{status}, update_time = NOW() WHERE id = #{id}
+    </update>
+
+    <update id="updateLikeCount">
+        UPDATE food SET like_count = like_count + #{param2}, update_time = NOW() WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM food WHERE id = #{id}
+    </delete>
+
+</mapper>

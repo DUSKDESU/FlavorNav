@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="match.flavornav.mapper.RegionMapper">
+
+    <resultMap id="RegionResult" type="match.flavornav.entity.Region">
+        <id property="id" column="id"/>
+        <result property="code" column="code"/>
+        <result property="name" column="name"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="level" column="level"/>
+        <result property="path" column="path"/>
+    </resultMap>
+
+    <select id="findAll" resultMap="RegionResult">
+        SELECT * FROM region ORDER BY code
+    </select>
+
+    <select id="findById" resultMap="RegionResult">
+        SELECT * FROM region WHERE id = #{id}
+    </select>
+
+    <select id="findByCode" resultMap="RegionResult">
+        SELECT * FROM region WHERE code = #{code}
+    </select>
+
+    <select id="findByLevel" resultMap="RegionResult">
+        SELECT * FROM region WHERE level = #{level} ORDER BY code
+    </select>
+
+    <select id="findByParentCode" resultMap="RegionResult">
+        SELECT * FROM region WHERE parent_id = #{parentCode} ORDER BY code
+    </select>
+
+</mapper>

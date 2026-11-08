@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>寻味华夏FlavorNav</title>
+    <link rel="icon" href="/images/logo.png" type="image/png">
+    <script src="/js/echarts.min.js"></script>
+    <link rel="stylesheet" href="/css/map.css">
+</head>
+<body>
+    <div id="loading-mask">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">正在加载地图数据...</div>
+    </div>
+
+    <div class="top-nav">
+        <div class="nav-left">
+            <a href="#" class="nav-logo" title="首页">
+                <img src="/images/logo.png" alt="寻味华夏" class="nav-logo-img">
+                <span class="nav-logo-text">寻味华夏</span>
+            </a>
+        </div>
+        <div class="nav-center">
+            <a href="/pages/auth/ai-chat.html" class="ai-assistant-link">
+                <img src="/images/ai-assistant.png" alt="AI助手" class="ai-assistant-avatar">
+                <span class="ai-assistant-text">AI助手</span>
+            </a>
+            <div class="nav-search-box">
+                <input type="text" class="nav-search-input" id="searchInput" placeholder="搜索美食、菜谱..." onkeypress="handleSearchKeypress(event)">
+                <button class="nav-search-btn" onclick="goToSearch()">搜索</button>
+            </div>
+        </div>
+        <div class="nav-right">
+            <div class="nav-user-info" id="navUserInfo" style="display: none;">
+                <img src="" alt="头像" class="nav-user-avatar" id="navUserAvatar">
+                <span class="nav-username" id="navUsername"></span>
+            </div>
+            <div id="userActionArea">
+                <button class="nav-login-btn" onclick="handleUserAction()">登录/注册</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="left-panel" id="leftPanel">
+            <button class="panel-close-btn" onclick="closePanel()">×</button>
+            <div class="panel-title"><span class="panel-title-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span><span class="panel-title-text">猜你喜欢的美食</span></div>
+            <div class="recommend-food-list" id="recommendFoodList">
+                <div class="recommend-loading">加载中...</div>
+            </div>
+        </div>
+
+        <div class="center-panel">
+            <div class="map-title" id="mapTitle">中国美食地图</div>
+            <button class="back-btn" id="backBtn" onclick="goBackMap()">← 返回全国</button>
+            <div id="map"></div>
+            <div class="map-attribution">
+                <span>地图数据来源：阿里云DataV http://datav.aliyun.com/tools/atlas/</span>
+                <span class="attribution-divider">|</span>
+                <span>参考标准：中华人民共和国自然资源部标准地图服务</span>
+                <span class="attribution-divider">|</span>
+                <a href="https://www.tianditu.gov.cn/" target="_blank" rel="noopener noreferrer">国家地理信息公共服务平台</a>
+            </div>
+        </div>
+
+        <div class="right-panel" id="rightPanel">
+            <button class="panel-close-btn" onclick="closePanel()">×</button>
+            <div class="panel-title"><span class="panel-title-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span><span class="panel-title-text">省份选择</span></div>
+            <div class="province-selector" id="provinceSelector"></div>
+        </div>
+
+        <div class="mobile-tabs" id="mobileTabs">
+            <button class="mobile-tab-btn" onclick="togglePanel('left')">
+                <span class="tab-icon">🍜</span>
+                <span>美食推荐</span>
+            </button>
+            <button class="mobile-tab-btn" onclick="togglePanel('right')">
+                <span class="tab-icon">📍</span>
+                <span>省份选择</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="ai-float-ball" id="aiFloatBall" onclick="goToAIChat()">
+        <img src="/images/ai-assistant.png" alt="AI助手">
+    </div>
+
+    <div class="modal-overlay" id="detailModal" onclick="FoodCardComponent.handleModalClick(event)">
+        <div class="detail-modal-content">
+            <div class="detail-header">
+                <h2>美食详情</h2>
+                <button class="close-btn" onclick="event.stopPropagation(); FoodCardComponent.closeDetail();">×</button>
+            </div>
+            <div class="bilibili-post-wrapper" id="detailBody">
+            </div>
+            <div class="comment-section">
+                <div class="comment-header">
+                    <h3>评论 <span class="comment-count" id="commentCount">0</span></h3>
+                    <div class="comment-sort">
+                        <span class="sort-item active" onclick="FoodCardComponent.sortComments('latest')">最新</span>
+                        <span class="sort-divider">|</span>
+                        <span class="sort-item" onclick="FoodCardComponent.sortComments('hot')">最热</span>
+                    </div>
+                </div>
+                <div class="comment-input-box">
+                    <div class="comment-input-wrapper">
+                        <textarea id="commentInput" placeholder="说点什么..." rows="2"></textarea>
+                        <div class="comment-submit-bar">
+                            <span class="comment-hint">文明评论，理性发言</span>
+                            <button class="btn btn-primary btn-sm" onclick="FoodCardComponent.submitComment()">发布</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="comment-list-container" id="commentList">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="/css/food-card.css">
+    <script src="/js/food-card.js"></script>
+    <script src="/js/map.js"></script>
+</body>
+</html>

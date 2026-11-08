@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理系统 - 寻味华夏</title>
+    <link rel="icon" href="/images/logo.png" type="image/png">
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+    <div class="top-nav">
+        <div class="nav-left">
+            <button class="back-btn-nav" onclick="goBack()">← 返回</button>
+            <div class="nav-logo">寻味华夏 - 管理后台</div>
+        </div>
+        <div class="nav-right">
+            <div class="nav-user" id="adminUsername">👤管理员</div>
+            <div class="nav-user" onclick="logout()">退出</div>
+        </div>
+    </div>
+
+    <div class="admin-container">
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-tab="dashboard">
+                    <span class="icon"></span>
+                    <span>数据概览</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="foods-pending">
+                    <span class="icon"></span>
+                    <span>待审核美食</span>
+                    <span class="badge" id="pending-badge">0</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="foods-all">
+                    <span class="icon"></span>
+                    <span>美食管理</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="users">
+                    <span class="icon"></span>
+                    <span>用户管理</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="content-area">
+                <div id="tab-dashboard" class="tab-content active">
+                    <div class="page-title">数据概览</div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">🍜</div>
+                            <div class="stat-info">
+                                <h3 id="total-foods">0</h3>
+                                <p>美食总数</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">⏳</div>
+                            <div class="stat-info">
+                                <h3 id="pending-foods">0</h3>
+                                <p>待审核</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">👥</div>
+                            <div class="stat-info">
+                                <h3 id="total-users">0</h3>
+                                <p>用户总数</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">✅</div>
+                            <div class="stat-info">
+                                <h3 id="active-users">0</h3>
+                                <p>活跃用户</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-foods-pending" class="tab-content">
+                    <div class="page-title">待审核美食</div>
+                    <div class="audit-toolbar">
+                        <span class="audit-mode-label">审核模式：</span>
+                        <div class="audit-mode-toggle" id="audit-mode-toggle">
+                            <button type="button" class="mode-btn active" data-mode="keyword">关键词审核</button>
+                            <button type="button" class="mode-btn" data-mode="ai">AI 审核</button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>图片</th>
+                                    <th>名称</th>
+                                    <th>地区</th>
+                                    <th>上传者</th>
+                                    <th>上传时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pending-foods-table">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="tab-foods-all" class="tab-content">
+                    <div class="page-title">美食管理</div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>图片</th>
+                                    <th>名称</th>
+                                    <th>地区</th>
+                                    <th>状态</th>
+                                    <th>上传时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="all-foods-table">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="tab-users" class="tab-content">
+                    <div class="page-title">用户管理</div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>头像</th>
+                                    <th>用户名</th>
+                                    <th>邮箱</th>
+                                    <th>角色</th>
+                                    <th>状态</th>
+                                    <th>注册时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="modal-overlay" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modal-title">提示</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+            </div>
+            <div class="modal-footer" id="modal-footer">
+                <button class="btn btn-secondary modal-cancel">取消</button>
+                <button class="btn btn-primary modal-confirm">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/admin.js"></script>
+</body>
+</html>

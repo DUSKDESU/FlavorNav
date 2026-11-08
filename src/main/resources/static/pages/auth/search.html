@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>搜索 - 寻味华夏</title>
+    <link rel="icon" href="/images/logo.png" type="image/png">
+    <link rel="stylesheet" href="/css/search.css">
+    <link rel="stylesheet" href="/css/food-card.css">
+</head>
+<body>
+    <div class="top-nav">
+        <div class="nav-left">
+            <button class="back-btn-nav" onclick="goBack()">← 返回</button>
+            <div class="page-title">美食搜索</div>
+        </div>
+    </div>
+
+    <div class="search-container">
+        <div class="search-box">
+            <input type="text" id="searchInput" class="search-input" placeholder="搜索美食名称、味道、历史、制作方法..." onkeyup="handleEnter(event)">
+            <button class="filter-btn" onclick="toggleFilterPanel()">筛选</button>
+            <button class="search-btn" onclick="searchFoods()">搜索</button>
+        </div>
+
+        <div class="filter-panel" id="filterPanel">
+            <div class="filter-section">
+                <div class="filter-label">分类</div>
+                <div class="filter-options" id="typeFilter">
+                    <label class="filter-tag"><input type="checkbox" name="filterType" value="主食"><span>主食</span></label>
+                    <label class="filter-tag"><input type="checkbox" name="filterType" value="菜肴"><span>菜肴</span></label>
+                    <label class="filter-tag"><input type="checkbox" name="filterType" value="汤羹"><span>汤羹</span></label>
+                    <label class="filter-tag"><input type="checkbox" name="filterType" value="饮品"><span>饮品</span></label>
+                    <label class="filter-tag"><input type="checkbox" name="filterType" value="零食/小食"><span>零食/小食</span></label>
+                    <label class="filter-tag"><input type="checkbox" name="filterType" value="甜品/冻品"><span>甜品/冻品</span></label>
+                    <label class="filter-tag"><input type="checkbox" name="filterType" value="生鲜/原材"><span>生鲜/原材</span></label>
+                    <label class="filter-tag"><input type="checkbox" name="filterType" value="速食/包装食品"><span>速食/包装食品</span></label>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <div class="filter-label">味道</div>
+                <div class="filter-options" id="tasteFilter">
+                    <label class="filter-tag"><input type="checkbox" name="filterTaste" value="酸"><span>酸</span></label>
+                    <label class="filter-tag"><input type="checkbox" name="filterTaste" value="甜"><span>甜</span></label>
+                    <label class="filter-tag"><input type="checkbox" name="filterTaste" value="苦"><span>苦</span></label>
+                    <label class="filter-tag"><input type="checkbox" name="filterTaste" value="辣"><span>辣</span></label>
+                    <label class="filter-tag"><input type="checkbox" name="filterTaste" value="咸"><span>咸</span></label>
+                    <label class="filter-tag"><input type="checkbox" name="filterTaste" value="鲜"><span>鲜</span></label>
+                    <label class="filter-tag"><input type="checkbox" name="filterTaste" value="涩"><span>涩</span></label>
+                    <label class="filter-tag"><input type="checkbox" name="filterTaste" value="香"><span>香</span></label>
+                    <label class="filter-tag"><input type="checkbox" name="filterTaste" value="麻"><span>麻</span></label>
+                    <label class="filter-tag"><input type="checkbox" name="filterTaste" value="油腻"><span>油腻</span></label>
+                    <label class="filter-tag"><input type="checkbox" name="filterTaste" value="清爽"><span>清爽</span></label>
+                    <label class="filter-tag"><input type="checkbox" name="filterTaste" value="顺滑"><span>顺滑</span></label>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <div class="filter-label">城市</div>
+                <div class="filter-options" id="cityFilter">
+                    <select id="provinceSelect" class="filter-select" onchange="loadCities()">
+                        <option value="">选择省份</option>
+                    </select>
+                    <select id="citySelect" class="filter-select">
+                        <option value="">选择城市</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="filter-actions">
+                <button class="btn btn-secondary" onclick="resetFilter()">重置</button>
+                <button class="btn btn-primary" onclick="searchFoods()">应用筛选</button>
+            </div>
+        </div>
+
+        <div class="search-history">
+            <div class="history-header">
+                <span class="history-label">搜索历史</span>
+                <span class="clear-history" onclick="clearHistory()">清空</span>
+            </div>
+            <div class="history-tags" id="historyTags"></div>
+        </div>
+
+        <div class="result-info" id="resultInfo"></div>
+
+        <div class="food-card-grid" id="foodList">
+            <div class="empty-state">
+                <div class="empty-state-icon">🔍</div>
+                <div class="empty-state-text">输入关键词搜索美食</div>
+                <div class="empty-state-hint">支持搜索美食名称、味道、历史、制作方法等</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 美食详情弹窗 -->
+    <div class="modal-overlay" id="detailModal" onclick="handleDetailModalClick(event)">
+        <div class="detail-modal-content">
+            <div class="detail-header">
+                <h2>美食详情</h2>
+                <button class="close-btn" onclick="FoodCardComponent.closeDetail()">✕</button>
+            </div>
+
+            <div class="bilibili-post-wrapper" id="detailBody">
+            </div>
+
+            <div class="comment-section">
+                <div class="comment-header">
+                    <h3>💬 评论 <span id="commentCount" class="comment-count">0</span></h3>
+                    <div class="comment-sort">
+                        <span class="sort-item active" onclick="FoodCardComponent.sortComments('latest')">最新</span>
+                        <span class="sort-divider">|</span>
+                        <span class="sort-item" onclick="FoodCardComponent.sortComments('hot')">最热</span>
+                    </div>
+                </div>
+
+                <div class="comment-input-box">
+                    <div class="comment-input-wrapper">
+                        <textarea id="commentInput" placeholder="说点什么..." rows="2"></textarea>
+                        <div class="comment-submit-bar">
+                            <span class="comment-hint">文明评论，理性发言</span>
+                            <button class="btn btn-primary btn-sm" onclick="FoodCardComponent.submitComment()">发布</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="comment-list-container" id="commentList">
+                    <div class="comment-empty-state">
+                        <div class="comment-empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+                        <p>暂无评论，来说两句吧</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/food-card.js"></script>
+    <script src="/js/search.js"></script>
+</body>
+</html>

@@ -1,0 +1,993 @@
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    background: #f5f5f5;
+    min-height: 100vh;
+    color: #333;
+}
+
+/* 顶部导航栏 */
+.top-nav {
+    background: #ffffff;
+    color: #333;
+    padding: 15px 30px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    height: 60px;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.back-btn-nav {
+    background: #ff6b35;
+    border: none;
+    color: #ffffff;
+    padding: 8px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.back-btn-nav:hover {
+    background: #e55a25;
+    transform: translateY(-1px);
+}
+
+.page-title {
+    font-size: 18px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 50%, #ffa07a 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* 个人主页头部 */
+.profile-header {
+    background: #ffffff;
+    margin-bottom: 20px;
+}
+
+.profile-banner {
+    position: relative;
+    background: linear-gradient(135deg, #ff6b35 0%, #ff8f65 50%, #ffb395 100%);
+    padding: 30px;
+}
+
+.banner-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('data:image/svg+xml,%3Csvg width="100" height="100" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M0 0h100v100H0z" fill="none"/%3E%3Ccircle cx="50" cy="50" r="40" fill="rgba(255,255,255,0.1)"/%3E%3C/svg%3E');
+    opacity: 0.3;
+}
+
+.profile-info {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.avatar-wrapper {
+    position: relative;
+}
+
+.user-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 4px solid #ffffff;
+    object-fit: cover;
+    background: #f5f5f5;
+}
+
+.avatar-badge {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    background: #4ecdc4;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    border: 2px solid #ffffff;
+}
+
+.user-details {
+    flex: 1;
+}
+
+.username {
+    font-size: 24px;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 8px;
+}
+
+.user-stats {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 12px;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.stat-item:hover {
+    transform: scale(1.05);
+}
+
+.stat-value {
+    font-size: 20px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.user-signature {
+    color: #ffffff;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 12px;
+    opacity: 0.95;
+}
+
+.profile-actions-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.admin-entry-btn {
+    background: rgba(255, 215, 0, 0.35);
+    border: 2px solid rgba(255, 215, 0, 0.9);
+    color: #ffffff;
+    padding: 8px 24px;
+    border-radius: 24px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.admin-entry-btn:hover {
+    background: rgba(255, 215, 0, 0.5);
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
+}
+
+.admin-icon {
+    font-size: 16px;
+}
+
+.admin-text {
+    white-space: nowrap;
+}
+
+.follow-btn {
+    background: rgba(255, 255, 255, 0.25);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    color: #ffffff;
+    padding: 8px 24px;
+    border-radius: 24px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.follow-btn:hover {
+    background: rgba(255, 255, 255, 0.35);
+    transform: scale(1.05);
+}
+
+.follow-btn.following {
+    background: rgba(255, 107, 53, 0.9);
+    border-color: #ff6b35;
+    color: #ffffff;
+}
+
+.follow-btn.following:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.8);
+}
+
+.follow-text {
+    white-space: nowrap;
+}
+
+.edit-signature-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: #ffffff;
+    padding: 6px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.3s;
+}
+
+.edit-signature-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.signature-edit-box {
+    margin-top: 12px;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.signature-edit-box textarea {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 6px;
+    padding: 10px;
+    color: #ffffff;
+    font-size: 14px;
+    resize: none;
+    outline: none;
+    font-family: inherit;
+}
+
+.signature-edit-box textarea::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.signature-edit-box textarea:focus {
+    border-color: #ffffff;
+}
+
+.signature-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.char-count {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 12px;
+}
+
+.signature-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.cancel-btn, .save-btn {
+    padding: 6px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.3s;
+}
+
+.cancel-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
+
+.cancel-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.save-btn {
+    background: #ffffff;
+    color: #ff6b35;
+}
+
+.save-btn:hover {
+    background: #f5f5f5;
+}
+
+/* 导航标签 */
+.profile-tabs {
+    display: flex;
+    gap: 0;
+    background: #ffffff;
+    border-bottom: 1px solid #e8e8e8;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 30px;
+}
+
+.tab-item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 16px 24px;
+    cursor: pointer;
+    color: #666;
+    font-size: 14px;
+    line-height: 1;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s;
+}
+
+.tab-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.tab-item:hover {
+    color: #ff6b35;
+}
+
+.tab-item.active {
+    color: #ff6b35;
+    border-bottom-color: #ff6b35;
+    font-weight: 500;
+}
+
+/* 主内容区 */
+.main-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 30px 30px;
+}
+
+.content-section {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 20px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.section-header h2 {
+    font-size: 18px;
+    color: #333;
+}
+
+.count-badge {
+    background: #ff6b35;
+    color: white;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    grid-column: 1 / -1;
+    padding: 64px 20px;
+    text-align: center;
+}
+
+.empty-state-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    margin-bottom: 18px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #f7f7f8, #f0f0f2);
+    color: #c9c9ce;
+}
+
+.empty-state-icon svg {
+    width: 36px;
+    height: 36px;
+}
+
+.empty-state-text {
+    font-size: 15px;
+    color: #9a9a9a;
+}
+
+.sort-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.sort-btn {
+    padding: 6px 16px;
+    border: 1px solid #e8e8e8;
+    border-radius: 18px;
+    background: #ffffff;
+    color: #666;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+
+.sort-btn:hover {
+    border-color: #ff6b35;
+    color: #ff6b35;
+    background: rgba(255, 107, 53, 0.05);
+}
+
+.sort-btn.active {
+    background: #ff6b35;
+    color: #ffffff;
+    border-color: #ff6b35;
+}
+
+.user-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    padding: 16px 0;
+}
+
+.user-card {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid #e8e8e8;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.user-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+.user-card-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.user-card-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.user-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-card-username {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-card-signature {
+    font-size: 12px;
+    color: #999;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-card-actions {
+    flex-shrink: 0;
+}
+
+.follow-action-btn {
+    padding: 6px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid #ff6b35;
+    background: #ffffff;
+    color: #ff6b35;
+}
+
+.follow-action-btn:hover {
+    background: #ff6b35;
+    color: #ffffff;
+}
+
+.follow-action-btn.following {
+    background: #f1f2f3;
+    color: #9499a0;
+    border-color: #e3e5e7;
+    cursor: default;
+}
+
+.follow-action-btn.following:hover {
+    background: #f1f2f3;
+    color: #9499a0;
+    border-color: #e3e5e7;
+}
+
+.modal-content {
+    background: #ffffff;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+.profile-edit-modal .modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e8e8e8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.profile-edit-modal .modal-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+
+.profile-edit-modal .modal-body {
+    padding: 24px;
+}
+
+.form-group {
+    margin-bottom: 24px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e8e8e8;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.3s;
+    box-sizing: border-box;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #ff6b35;
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+}
+
+.form-textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e8e8e8;
+    border-radius: 6px;
+    font-size: 14px;
+    resize: vertical;
+    transition: all 0.3s;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.form-textarea:focus {
+    outline: none;
+    border-color: #ff6b35;
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+}
+
+.char-count {
+    text-align: right;
+    font-size: 12px;
+    color: #999;
+    margin-top: 6px;
+}
+
+.avatar-upload-box {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.avatar-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #e8e8e8;
+}
+
+.avatar-upload-btn {
+    padding: 10px 20px;
+    background: #ff6b35;
+    color: #ffffff;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.avatar-upload-btn:hover {
+    background: #ff8c00;
+    transform: translateY(-1px);
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid #e8e8e8;
+}
+
+.cancel-btn,
+.save-btn {
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: none;
+}
+
+.cancel-btn {
+    background: #f5f5f5;
+    color: #666;
+}
+
+.cancel-btn:hover {
+    background: #e8e8e8;
+}
+
+.save-btn {
+    background: #ff6b35;
+    color: #ffffff;
+}
+
+.save-btn:hover {
+    background: #ff8c00;
+    transform: translateY(-1px);
+}
+
+/* ===== 移动端适配 ===== */
+@media screen and (max-width: 768px) {
+    /* 顶部导航栏 */
+    .top-nav {
+        padding: 10px 15px;
+        height: 50px;
+    }
+
+    .nav-left {
+        gap: 10px;
+    }
+
+    .back-btn-nav {
+        padding: 4px 10px;
+        font-size: 12px;
+    }
+
+    .nav-logo {
+        font-size: 16px;
+    }
+
+    .nav-right {
+        gap: 15px;
+    }
+
+    .nav-user {
+        font-size: 13px;
+    }
+
+    /* 个人主页头部 */
+    .profile-banner {
+        padding: 20px 15px;
+    }
+
+    .profile-info {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 16px;
+    }
+
+    .user-avatar {
+        width: 80px;
+        height: 80px;
+    }
+
+    .avatar-badge {
+        width: 20px;
+        height: 20px;
+        font-size: 10px;
+        bottom: 3px;
+        right: 3px;
+    }
+
+    .username {
+        font-size: 20px;
+    }
+
+    .user-stats {
+        gap: 20px;
+        justify-content: center;
+    }
+
+    .stat-value {
+        font-size: 18px;
+    }
+
+    .stat-label {
+        font-size: 11px;
+    }
+
+    .user-signature {
+        font-size: 13px;
+        padding: 0 10px;
+    }
+
+    .profile-actions-row {
+        justify-content: center;
+    }
+
+    .admin-entry-btn {
+        padding: 6px 16px;
+        font-size: 13px;
+    }
+
+    .follow-btn,
+    .edit-signature-btn,
+    .admin-entry-btn {
+        padding: 6px 18px;
+        font-size: 13px;
+    }
+
+    /* 导航标签 */
+    .profile-tabs {
+        padding: 0 15px;
+    }
+
+    .tab-item {
+        padding: 12px 16px;
+        font-size: 13px;
+        flex: 1;
+        text-align: center;
+    }
+
+    /* 主内容区 */
+    .main-container {
+        padding: 0 15px 20px;
+    }
+
+    .content-section {
+        padding: 16px;
+        border-radius: 6px;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+    }
+
+    .section-header h2 {
+        font-size: 16px;
+    }
+
+    .sort-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .sort-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    /* 用户列表 */
+    .user-list {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .user-card {
+        padding: 12px;
+    }
+
+    .user-card-avatar {
+        width: 40px;
+        height: 40px;
+    }
+
+    /* 编辑资料弹窗 */
+    .modal-content {
+        width: 95%;
+        max-height: 85vh;
+    }
+
+    .profile-edit-modal .modal-header {
+        padding: 16px 20px;
+    }
+
+    .profile-edit-modal .modal-body {
+        padding: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .avatar-upload-box {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .avatar-preview {
+        width: 60px;
+        height: 60px;
+    }
+
+    .avatar-upload-btn {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+
+    .form-actions {
+        padding-top: 16px;
+        margin-top: 20px;
+    }
+
+    .cancel-btn,
+    .save-btn {
+        padding: 8px 20px;
+        font-size: 13px;
+    }
+
+    /* 签名编辑框 */
+    .signature-edit-box {
+        padding: 10px;
+    }
+
+    .signature-edit-box textarea {
+        font-size: 13px;
+        padding: 8px;
+    }
+
+    .cancel-btn, .save-btn {
+        padding: 5px 14px;
+        font-size: 12px;
+    }
+}
+
+/* 超小屏幕适配 */
+@media screen and (max-width: 480px) {
+    .top-nav {
+        padding: 8px 12px;
+        height: 48px;
+    }
+
+    .nav-logo {
+        font-size: 15px;
+    }
+
+    .back-btn-nav {
+        padding: 3px 8px;
+        font-size: 11px;
+    }
+
+    .profile-banner {
+        padding: 16px 12px;
+    }
+
+    .user-avatar {
+        width: 70px;
+        height: 70px;
+    }
+
+    .username {
+        font-size: 18px;
+    }
+
+    .user-stats {
+        gap: 16px;
+    }
+
+    .stat-value {
+        font-size: 16px;
+    }
+
+    .stat-label {
+        font-size: 10px;
+    }
+
+    .tab-item {
+        padding: 10px 12px;
+        font-size: 12px;
+    }
+
+    .content-section {
+        padding: 12px;
+    }
+
+    .section-header h2 {
+        font-size: 15px;
+    }
+
+    .user-card-username {
+        font-size: 13px;
+    }
+
+    .user-card-signature {
+        font-size: 11px;
+    }
+}
