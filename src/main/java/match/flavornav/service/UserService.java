@@ -60,17 +60,13 @@ public class UserService {
     public User login(String username, String password)
     {
         User user = userMapper.findByUsername(username);
-        if (user == null)
+
+        if (user == null || password == null || password.isEmpty() || !passwordEncoder.matches(password, user.getPassword()))
         {
-            throw new RuntimeException("用户不存在");
+            throw new RuntimeException("用户或密码错误");
 
         }
 
-        if (password == null || password.isEmpty() || !passwordEncoder.matches(password, user.getPassword()))
-        {
-            throw new RuntimeException("密码错误");
-
-        }
         if (user.getStatus() != 1)
         {
             throw new RuntimeException("账号已被禁用");

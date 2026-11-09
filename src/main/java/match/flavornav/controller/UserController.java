@@ -6,6 +6,7 @@ import match.flavornav.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
@@ -25,7 +26,7 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/login")//登录
-    public Result<User> login(@RequestBody Map<String, String> credentials, HttpSession session)
+    public Result<User> login(@RequestBody Map<String, String> credentials, HttpSession session, HttpServletRequest request)
     {
         try {
             String username = credentials.get("username");
@@ -34,6 +35,9 @@ public class UserController {
             
             // 登录成功，保存用户到 Session
             session.setAttribute("user", user);
+            // 防会话固定：登录前后必须是不同的 JSESSIONID，否则登录前拿到的 ID 会直接变成"已登录"的身份
+            // changeSessionId() 只换 ID、保留会话属性，容器会自动下发新的 Cookie
+            request.changeSessionId();
             session.setMaxInactiveInterval(3600); // 1小时过期
             
             return Result.success(user);

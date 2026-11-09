@@ -60,11 +60,33 @@ public class AdminController
 
 
 
+    /**
+     * 判断当前会话是否为管理员。
+     * <p>
+     * 每次都按 id 回查数据库，而不是只看 session 里的快照：
+     * 管理员被降级或封禁后，他手上的旧会话会立刻失去管理权限，不用等 1 小时过期。
+     */
     private boolean isAdmin(jakarta.servlet.http.HttpSession session) //判断用户是否为管理员
     {
-        User user = (User) session.getAttribute("user");
+        User sessionUser = (User) session.getAttribute("user");
 
-        return user != null && user.getRole() == 2;
+        if (sessionUser == null || sessionUser.getId() == null)
+        {
+            return false;
+        }
+
+        User dbUser = userService.getUserById(sessionUser.getId());
+
+        if (dbUser == null
+                || !Integer.valueOf(2).equals(dbUser.getRole())
+                || !Integer.valueOf(1).equals(dbUser.getStatus()))
+        {
+            return false;
+        }
+
+        // 同步会话里的快照，避免前端仍显示过期的角色/昵称
+        session.setAttribute("user", dbUser);
+        return true;
     }
 
     @GetMapping("/foods/pending")

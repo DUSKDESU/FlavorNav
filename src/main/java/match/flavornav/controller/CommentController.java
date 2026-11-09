@@ -94,7 +94,7 @@ public class CommentController {
         }
 
         boolean isOwner = comment.getUserId().equals(currentUser.getId());
-        boolean isAdmin = currentUser.getRole() != null && currentUser.getRole() == 1;
+        boolean isAdmin = Integer.valueOf(2).equals(currentUser.getRole());
 
         if (!isOwner && !isAdmin) {
             return Result.error("无权限删除该评论");
@@ -114,7 +114,7 @@ public class CommentController {
             @RequestParam Integer status,
             jakarta.servlet.http.HttpSession session) {
         User currentUser = (User) session.getAttribute("user");
-        if (currentUser == null || currentUser.getRole() != 1) {
+        if (currentUser == null || !Integer.valueOf(2).equals(currentUser.getRole())) {
             return Result.error("无权限操作");
         }
 
