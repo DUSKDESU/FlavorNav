@@ -2,6 +2,8 @@ package match.flavornav.entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import tools.jackson.databind.annotation.JsonSerialize;
+import match.flavornav.config.StorageUrlSerializer;
 import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
@@ -15,9 +17,11 @@ public class Food {
     private String history;
     private Long regionId;
     private String regionName;
+    @JsonSerialize(using = StorageUrlSerializer.class)
     private String imageUrl;
     private Long userId;
     private String userName;
+    @JsonSerialize(using = StorageUrlSerializer.class)
     private String userAvatar;
     private Integer status;
     private Integer likeCount;

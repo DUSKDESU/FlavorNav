@@ -2,6 +2,7 @@ package match.flavornav.controller;
 import match.flavornav.entity.Result;
 import match.flavornav.entity.User;
 import match.flavornav.entity.UserProfileVO;
+import match.flavornav.service.StorageService;
 import match.flavornav.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -9,13 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/user")
@@ -24,6 +19,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private StorageService storageService;
 
     @PostMapping("/login")//登录
     public Result<User> login(@RequestBody Map<String, String> credentials, HttpSession session, HttpServletRequest request)
@@ -176,13 +174,22 @@ public class UserController {
                 user.setSignature(signature);
             }
 
+            String oldAvatar = user.getAvatar();
+
             if (avatar != null && !avatar.isEmpty())
             {
-                String avatarPath = saveAvatar(avatar);
-                user.setAvatar(avatarPath);
+                // 上传到 OSS，数据库只保存 object key
+                user.setAvatar(storageService.upload(avatar, "avatars"));
             }
 
             User updatedUser = userService.updateUser(user);
+
+            // 更新成功后再清理旧头像，失败不影响业务
+            if (avatar != null && !avatar.isEmpty())
+            {
+                storageService.deleteQuietly(oldAvatar);
+            }
+
             session.setAttribute("user", updatedUser);
             return Result.success(updatedUser);
         }
@@ -195,22 +202,6 @@ public class UserController {
 
             return Result.error(e.getMessage());
         }
-    }
-
-    private String saveAvatar(MultipartFile file) throws IOException
-    {
-        String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-        Path uploadPath = Paths.get("uploads/avatars");
-
-        if (!Files.exists(uploadPath))
-        {
-            Files.createDirectories(uploadPath);
-        }
-
-        Path filePath = uploadPath.resolve(fileName);
-        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-        return "/uploads/avatars/" + fileName;
     }
 
     // 前端无使用并且有越权修改风险 先关闭接口 后续再做优化（如果能过初赛的话

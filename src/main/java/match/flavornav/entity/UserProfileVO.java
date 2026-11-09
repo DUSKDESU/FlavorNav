@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import match.flavornav.util.StorageUrlUtil;
 
 import java.time.LocalDateTime;
 
@@ -34,7 +35,7 @@ public class UserProfileVO {
         UserProfileVO vo = new UserProfileVO();
         vo.setId(user.getId());
         vo.setUsername(user.getUsername());
-        vo.setAvatar(user.getAvatar());
+        vo.setAvatar(StorageUrlUtil.resolve(user.getAvatar()));
         vo.setSignature(user.getSignature());
         vo.setHometownRegionName(user.getHometownRegionName());
         vo.setFollowingCount(user.getFollowingCount());

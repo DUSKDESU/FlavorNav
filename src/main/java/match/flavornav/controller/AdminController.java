@@ -7,6 +7,7 @@ import match.flavornav.service.AIService;
 import match.flavornav.service.AuditConfigService;
 import match.flavornav.service.SensitiveKeywordService;
 import match.flavornav.service.FoodService;
+import match.flavornav.service.StorageService;
 import match.flavornav.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +30,9 @@ public class AdminController
     private FoodService foodService;
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private StorageService storageService;
 
     @Autowired
     private SensitiveKeywordService sensitiveKeywordService;
@@ -173,7 +177,16 @@ public class AdminController
 
         try
         {
+            Food food = foodService.getFoodById(id);
+
             foodService.deleteFood(id);
+
+            // 数据库删除成功后，再清理 OSS 上的图片
+            if (food != null)
+            {
+                storageService.deleteQuietly(food.getImageUrl());
+            }
+
             return Result.success();
         }
         catch (Exception e)

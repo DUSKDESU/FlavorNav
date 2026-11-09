@@ -10,15 +10,10 @@ import match.flavornav.service.RegionService;
 import match.flavornav.service.SensitiveKeywordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import match.flavornav.service.StorageService;
 import org.springframework.web.multipart.MultipartFile;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -38,8 +33,8 @@ public class FoodController
     @Autowired
     private AIService aiService;
 
-
-    private final String uploadDir = "uploads/foods/";
+    @Autowired
+    private StorageService storageService;
 
     @GetMapping//获取所有美食
     public Result<List<Food>> getAllFoods()
@@ -107,11 +102,11 @@ public class FoodController
                 food.setStatus(matched.isEmpty() ? 1 : 0);
             }
             
-            // 处理图片
+            // 处理图片：先清掉表单可能绑定的 imageUrl，再按上传结果写入 OSS object key
+            food.setImageUrl(null);
             if (file != null && !file.isEmpty())
             {
-                String imagePath = saveImage(file);
-                food.setImageUrl(imagePath);
+                food.setImageUrl(storageService.upload(file, "foods"));
             }
 
             Food savedFood = foodService.addFood(food);
@@ -123,15 +118,27 @@ public class FoodController
         }
     }
 
-    @PutMapping("/{id}")//修改美食
-    public Result<Food> updateFood(@PathVariable Long id, @RequestParam(value = "name", required = false) String name, @RequestParam(value = "description", required = false) String description, @RequestParam(value = "ingredients", required = false) String ingredients, @RequestParam(value = "cookingMethod", required = false) String cookingMethod, @RequestParam(value = "history", required = false) String history, @RequestParam(value = "file", required = false) MultipartFile file)
+    @PutMapping("/{id}")//修改美食（仅作者本人或管理员）
+    public Result<Food> updateFood(@PathVariable Long id, @RequestParam(value = "name", required = false) String name, @RequestParam(value = "description", required = false) String description, @RequestParam(value = "ingredients", required = false) String ingredients, @RequestParam(value = "cookingMethod", required = false) String cookingMethod, @RequestParam(value = "history", required = false) String history, @RequestParam(value = "file", required = false) MultipartFile file, jakarta.servlet.http.HttpSession session)
     {
 
         try {
+            User currentUser = (User) session.getAttribute("user");
+            if (currentUser == null)
+            {
+                return Result.error("请先登录");
+            }
+
             Food food = foodService.getFoodById(id);
             if (food == null)
             {
                 return Result.error("美食不存在");
+            }
+
+            boolean isAdmin = Integer.valueOf(2).equals(currentUser.getRole());
+            if (!isAdmin && !currentUser.getId().equals(food.getUserId()))
+            {
+                return Result.error("无权修改他人的帖子");
             }
 
             if (name != null)//
@@ -159,13 +166,21 @@ public class FoodController
                 food.setHistory(history);
             }
 
+            String oldImage = food.getImageUrl();
+
             if (file != null && !file.isEmpty())
             {
-                String imageUrl = saveImage(file);
-                food.setImageUrl(imageUrl);
+                food.setImageUrl(storageService.upload(file, "foods"));
             }
 
             Food updatedFood = foodService.updateFood(food);
+
+            // 更新成功后再清理旧图，失败也不影响业务
+            if (file != null && !file.isEmpty())
+            {
+                storageService.deleteQuietly(oldImage);
+            }
+
             return Result.success(updatedFood);
         }
         catch (Exception e)
@@ -174,12 +189,34 @@ public class FoodController
         }
     }
 
-    @DeleteMapping("/{id}")//删除美食
-    public Result<Void> deleteFood(@PathVariable Long id)
+    @DeleteMapping("/{id}")//删除美食（仅作者本人或管理员）
+    public Result<Void> deleteFood(@PathVariable Long id, jakarta.servlet.http.HttpSession session)
     {
         try
         {
+            User currentUser = (User) session.getAttribute("user");
+            if (currentUser == null)
+            {
+                return Result.error("请先登录");
+            }
+
+            Food food = foodService.getFoodById(id);
+            if (food == null)
+            {
+                return Result.error("美食不存在");
+            }
+
+            boolean isAdmin = Integer.valueOf(2).equals(currentUser.getRole());
+            if (!isAdmin && !currentUser.getId().equals(food.getUserId()))
+            {
+                return Result.error("无权删除他人的帖子");
+            }
+
             foodService.deleteFood(id);
+
+            // 数据库删除成功后，再清理 OSS 上的图片
+            storageService.deleteQuietly(food.getImageUrl());
+
             return Result.success();
         }
         catch (Exception e)
@@ -211,22 +248,6 @@ public class FoodController
 
         log.info("返回推荐美食数量: {}", foods.size());
         return Result.success(foods);
-    }
-
-    private String saveImage(MultipartFile file) throws IOException
-    {
-        String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-        Path uploadPath = Paths.get(uploadDir);
-
-        if (!Files.exists(uploadPath))
-        {
-            Files.createDirectories(uploadPath);
-        }
-
-        Path filePath = uploadPath.resolve(fileName);
-        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-        return "/uploads/foods/" + fileName;
     }
 }
 

@@ -105,7 +105,7 @@ public class UserFollowController
             Map<String, Object> userInfo = new HashMap<>();
             userInfo.put("id", user.getId());
             userInfo.put("username", user.getUsername());
-            userInfo.put("avatar", user.getAvatar());
+            userInfo.put("avatar", match.flavornav.util.StorageUrlUtil.resolve(user.getAvatar()));
             userInfo.put("signature", user.getSignature());
             
             // 检查是否互粉
@@ -131,7 +131,7 @@ public class UserFollowController
             Map<String, Object> userInfo = new HashMap<>();
             userInfo.put("id", user.getId());
             userInfo.put("username", user.getUsername());
-            userInfo.put("avatar", user.getAvatar());
+            userInfo.put("avatar", match.flavornav.util.StorageUrlUtil.resolve(user.getAvatar()));
             userInfo.put("signature", user.getSignature());
             
             // 检查是否互粉

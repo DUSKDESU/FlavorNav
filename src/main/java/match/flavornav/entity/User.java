@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import match.flavornav.config.StorageUrlSerializer;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 import java.time.LocalDateTime;
 
@@ -24,6 +26,7 @@ public class User {
     private String hometownRegionCode;
     private String hometownRegionName;
     private String signature;
+    @JsonSerialize(using = StorageUrlSerializer.class)
     private String avatar;
     private Integer followingCount;
     private Integer followerCount;
