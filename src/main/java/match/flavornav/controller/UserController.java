@@ -1,6 +1,7 @@
 package match.flavornav.controller;
 import match.flavornav.entity.Result;
 import match.flavornav.entity.User;
+import match.flavornav.entity.UserProfileVO;
 import match.flavornav.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -76,32 +77,27 @@ public class UserController {
         }
     }
 
-    @GetMapping("/{id}")//获取指定ID的用户
-    public Result<User> getUserById(@PathVariable Long id)
+    @GetMapping("/{id}")//获取指定ID的用户（只返回公开资料，不含邮箱/手机号等隐私字段）
+    public Result<UserProfileVO> getUserById(@PathVariable Long id)
     {
         User user = userService.getUserById(id);
-        return user != null ? Result.success(user) : Result.error("用户不存在");
+        return user != null ? Result.success(UserProfileVO.from(user)) : Result.error("用户不存在");
     }
 
-    @PutMapping("/{id}")//修改用户
-    public Result<User> updateUser(@PathVariable Long id, @RequestBody User user)
-    {
-        try
-        {
-            user.setId(id);
-            User updatedUser = userService.updateUser(user);
-            return Result.success(updatedUser);
-        }
-        catch (Exception e)
-        {
-            return Result.error(e.getMessage());
-        }
-    }
-
-    @PutMapping("/{id}/password")//修改密码
-    public Result<Void> changePassword(@PathVariable Long id, @RequestBody Map<String, String> passwords)
+    @PutMapping("/{id}/password")//修改密码（仅本人；管理员重置走 /api/admin/users/{id}/password）
+    public Result<Void> changePassword(@PathVariable Long id, @RequestBody Map<String, String> passwords, HttpSession session)
     {
         try {
+            User currentUser = (User) session.getAttribute("user");
+            if (currentUser == null)
+            {
+                return Result.error("请先登录");
+            }
+            if (!currentUser.getId().equals(id))
+            {
+                return Result.error("无权修改他人密码");
+            }
+
             String oldPassword = passwords.get("oldPassword");
             String newPassword = passwords.get("newPassword");
             userService.changePassword(id, oldPassword, newPassword);
@@ -213,8 +209,25 @@ public class UserController {
         return "/uploads/avatars/" + fileName;
     }
 
-    @DeleteMapping("/{id}")//删除用户
-    public Result<Void> deleteUser(@PathVariable Long id)
+    // 前端无使用并且有越权修改风险 先关闭接口 后续再做优化（如果能过初赛的话
+    // @PutMapping("/{id}")//修改用户
+/*    public Result<User> updateUser(@PathVariable Long id, @RequestBody User user)
+    {
+        try
+        {
+            user.setId(id);
+            User updatedUser = userService.updateUser(user);
+            return Result.success(updatedUser);
+        }
+        catch (Exception e)
+        {
+            return Result.error(e.getMessage());
+        }
+    }*/
+
+    // 前端无使用并且有越权删除的风险
+    // @DeleteMapping("/{id}")//删除用户
+/*    public Result<Void> deleteUser(@PathVariable Long id)
     {
         try
         {
@@ -224,6 +237,6 @@ public class UserController {
         {
             return Result.error(e.getMessage());
         }
-    }
+    }*/
 }
 
