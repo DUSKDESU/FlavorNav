@@ -148,4 +148,9 @@
         DELETE FROM food WHERE id = #{id}
     </delete>
 
+    <!-- 删除某个用户发布的全部帖子；comment 与 food_favorite 由外键 ON DELETE CASCADE 一并清理 -->
+    <delete id="deleteByUserId">
+        DELETE FROM food WHERE user_id = #{userId}
+    </delete>
+
 </mapper>

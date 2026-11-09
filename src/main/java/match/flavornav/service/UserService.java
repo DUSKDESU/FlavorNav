@@ -1,11 +1,14 @@
 package match.flavornav.service;
+import match.flavornav.entity.Food;
 import match.flavornav.entity.User;
+import match.flavornav.mapper.FoodMapper;
 import match.flavornav.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -14,6 +17,9 @@ public class UserService {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private FoodMapper foodMapper;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -105,9 +111,48 @@ public class UserService {
         userMapper.updatePassword(userId, passwordEncoder.encode(newPassword));
     }
 
+    /**
+     * 仅删除账号这一行：不删帖子，也不清理 OSS 上的头像和帖子图片。
+     * 管理端"删除账号"请改用 {@link #deleteUserCompletely(Long)}，否则会留下无主帖子和孤儿图片。
+     */
     public void deleteUser(Long id)
     {
         userMapper.deleteById(id);
+    }
+
+    /**
+     * 彻底删除账号：先删该用户发布的全部帖子，再删用户行；
+     * 评论、收藏、关注关系由数据库外键 ON DELETE CASCADE 自动清理。
+     * <p>
+     * 图片对象不在这里删——返回待清理的 OSS key，由调用方在事务提交后处理，
+     * 避免出现"事务回滚了、图片却已经删掉"的不可恢复问题。
+     *
+     * @return 需要清理的 OSS 对象 key；用户不存在时返回 null
+     */
+    public List<String> deleteUserCompletely(Long userId)
+    {
+        User user = userMapper.findById(userId);
+        if (user == null)
+        {
+            return null;
+        }
+
+        List<String> keys = new ArrayList<>();
+        if (user.getAvatar() != null && !user.getAvatar().isBlank())
+        {
+            keys.add(user.getAvatar());
+        }
+        for (Food food : foodMapper.findByUserId(userId))
+        {
+            if (food.getImageUrl() != null && !food.getImageUrl().isBlank())
+            {
+                keys.add(food.getImageUrl());
+            }
+        }
+
+        foodMapper.deleteByUserId(userId);
+        userMapper.deleteById(userId);
+        return keys;
     }
 
     public void updateSignature(Long userId, String signature)

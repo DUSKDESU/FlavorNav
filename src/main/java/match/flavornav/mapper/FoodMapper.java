@@ -31,6 +31,8 @@ public interface FoodMapper {
 
     int deleteById(@Param("id") Long id);// 删除美食帖子
 
+    int deleteByUserId(@Param("userId") Long userId);// 删除某个用户发布的全部帖子（销号用）
+
     List<Food> search(@Param("keyword") String keyword, @Param("regionId") Long regionId, @Param("types") String types, @Param("tastes") String tastes);
         // 搜索美食帖子，根据关键字、地区、类型和口味进行搜索
     List<Food> findPopularFoods(@Param("locationKeyword") String locationKeyword, @Param("limit") int limit);

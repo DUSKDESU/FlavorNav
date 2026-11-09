@@ -306,7 +306,7 @@ public class AdminController
         }
     }
 
-    @DeleteMapping("/users/{id}")//删除指定的用户
+    @DeleteMapping("/users/{id}")//删除指定的用户（连同其帖子与 OSS 图片一起清理）
     public Result<Void> deleteUser(@PathVariable Long id, jakarta.servlet.http.HttpSession session)
     {
         if (!isAdmin(session))
@@ -314,7 +314,24 @@ public class AdminController
 
         try
         {
-            userService.deleteUser(id);
+            User operator = (User) session.getAttribute("user");
+            if (operator != null && operator.getId().equals(id))
+            {
+                return Result.error("不能删除当前登录的账号");
+            }
+
+            List<String> objectKeys = userService.deleteUserCompletely(id);
+            if (objectKeys == null)
+            {
+                return Result.error("用户不存在");
+            }
+
+            // 数据库事务已提交，这里再清理 OSS 对象；失败只记日志
+            for (String key : objectKeys)
+            {
+                storageService.deleteQuietly(key);
+            }
+
             return Result.success();
         }
         catch (Exception e)
