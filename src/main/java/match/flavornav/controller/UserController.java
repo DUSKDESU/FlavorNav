@@ -1,19 +1,16 @@
 package match.flavornav.controller;
 import match.flavornav.entity.Result;
 import match.flavornav.entity.User;
+import match.flavornav.entity.UserProfileVO;
+import match.flavornav.service.StorageService;
 import match.flavornav.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/user")
@@ -23,8 +20,11 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private StorageService storageService;
+
     @PostMapping("/login")//登录
-    public Result<User> login(@RequestBody Map<String, String> credentials, HttpSession session)
+    public Result<User> login(@RequestBody Map<String, String> credentials, HttpSession session, HttpServletRequest request)
     {
         try {
             String username = credentials.get("username");
@@ -33,6 +33,9 @@ public class UserController {
             
             // 登录成功，保存用户到 Session
             session.setAttribute("user", user);
+            // 防会话固定：登录前后必须是不同的 JSESSIONID，否则登录前拿到的 ID 会直接变成"已登录"的身份
+            // changeSessionId() 只换 ID、保留会话属性，容器会自动下发新的 Cookie
+            request.changeSessionId();
             session.setMaxInactiveInterval(3600); // 1小时过期
             
             return Result.success(user);
@@ -76,32 +79,27 @@ public class UserController {
         }
     }
 
-    @GetMapping("/{id}")//获取指定ID的用户
-    public Result<User> getUserById(@PathVariable Long id)
+    @GetMapping("/{id}")//获取指定ID的用户（只返回公开资料，不含邮箱/手机号等隐私字段）
+    public Result<UserProfileVO> getUserById(@PathVariable Long id)
     {
         User user = userService.getUserById(id);
-        return user != null ? Result.success(user) : Result.error("用户不存在");
+        return user != null ? Result.success(UserProfileVO.from(user)) : Result.error("用户不存在");
     }
 
-    @PutMapping("/{id}")//修改用户
-    public Result<User> updateUser(@PathVariable Long id, @RequestBody User user)
-    {
-        try
-        {
-            user.setId(id);
-            User updatedUser = userService.updateUser(user);
-            return Result.success(updatedUser);
-        }
-        catch (Exception e)
-        {
-            return Result.error(e.getMessage());
-        }
-    }
-
-    @PutMapping("/{id}/password")//修改密码
-    public Result<Void> changePassword(@PathVariable Long id, @RequestBody Map<String, String> passwords)
+    @PutMapping("/{id}/password")//修改密码（仅本人；管理员重置走 /api/admin/users/{id}/password）
+    public Result<Void> changePassword(@PathVariable Long id, @RequestBody Map<String, String> passwords, HttpSession session)
     {
         try {
+            User currentUser = (User) session.getAttribute("user");
+            if (currentUser == null)
+            {
+                return Result.error("请先登录");
+            }
+            if (!currentUser.getId().equals(id))
+            {
+                return Result.error("无权修改他人密码");
+            }
+
             String oldPassword = passwords.get("oldPassword");
             String newPassword = passwords.get("newPassword");
             userService.changePassword(id, oldPassword, newPassword);
@@ -176,13 +174,22 @@ public class UserController {
                 user.setSignature(signature);
             }
 
+            String oldAvatar = user.getAvatar();
+
             if (avatar != null && !avatar.isEmpty())
             {
-                String avatarPath = saveAvatar(avatar);
-                user.setAvatar(avatarPath);
+                // 上传到 OSS，数据库只保存 object key
+                user.setAvatar(storageService.upload(avatar, "avatars"));
             }
 
             User updatedUser = userService.updateUser(user);
+
+            // 更新成功后再清理旧头像，失败不影响业务
+            if (avatar != null && !avatar.isEmpty())
+            {
+                storageService.deleteQuietly(oldAvatar);
+            }
+
             session.setAttribute("user", updatedUser);
             return Result.success(updatedUser);
         }
@@ -197,24 +204,25 @@ public class UserController {
         }
     }
 
-    private String saveAvatar(MultipartFile file) throws IOException
+    // 前端无使用并且有越权修改风险 先关闭接口 后续再做优化（如果能过初赛的话
+    // @PutMapping("/{id}")//修改用户
+/*    public Result<User> updateUser(@PathVariable Long id, @RequestBody User user)
     {
-        String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-        Path uploadPath = Paths.get("uploads/avatars");
-
-        if (!Files.exists(uploadPath))
+        try
         {
-            Files.createDirectories(uploadPath);
+            user.setId(id);
+            User updatedUser = userService.updateUser(user);
+            return Result.success(updatedUser);
         }
+        catch (Exception e)
+        {
+            return Result.error(e.getMessage());
+        }
+    }*/
 
-        Path filePath = uploadPath.resolve(fileName);
-        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-        return "/uploads/avatars/" + fileName;
-    }
-
-    @DeleteMapping("/{id}")//删除用户
-    public Result<Void> deleteUser(@PathVariable Long id)
+    // 前端无使用并且有越权删除的风险
+    // @DeleteMapping("/{id}")//删除用户
+/*    public Result<Void> deleteUser(@PathVariable Long id)
     {
         try
         {
@@ -224,6 +232,6 @@ public class UserController {
         {
             return Result.error(e.getMessage());
         }
-    }
+    }*/
 }
 

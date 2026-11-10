@@ -7,6 +7,7 @@ import match.flavornav.service.AIService;
 import match.flavornav.service.AuditConfigService;
 import match.flavornav.service.SensitiveKeywordService;
 import match.flavornav.service.FoodService;
+import match.flavornav.service.StorageService;
 import match.flavornav.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +30,9 @@ public class AdminController
     private FoodService foodService;
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private StorageService storageService;
 
     @Autowired
     private SensitiveKeywordService sensitiveKeywordService;
@@ -60,11 +64,33 @@ public class AdminController
 
 
 
+    /**
+     * 判断当前会话是否为管理员。
+     * <p>
+     * 每次都按 id 回查数据库，而不是只看 session 里的快照：
+     * 管理员被降级或封禁后，他手上的旧会话会立刻失去管理权限，不用等 1 小时过期。
+     */
     private boolean isAdmin(jakarta.servlet.http.HttpSession session) //判断用户是否为管理员
     {
-        User user = (User) session.getAttribute("user");
+        User sessionUser = (User) session.getAttribute("user");
 
-        return user != null && user.getRole() == 2;
+        if (sessionUser == null || sessionUser.getId() == null)
+        {
+            return false;
+        }
+
+        User dbUser = userService.getUserById(sessionUser.getId());
+
+        if (dbUser == null
+                || !Integer.valueOf(2).equals(dbUser.getRole())
+                || !Integer.valueOf(1).equals(dbUser.getStatus()))
+        {
+            return false;
+        }
+
+        // 同步会话里的快照，避免前端仍显示过期的角色/昵称
+        session.setAttribute("user", dbUser);
+        return true;
     }
 
     @GetMapping("/foods/pending")
@@ -151,7 +177,16 @@ public class AdminController
 
         try
         {
+            Food food = foodService.getFoodById(id);
+
             foodService.deleteFood(id);
+
+            // 数据库删除成功后，再清理 OSS 上的图片
+            if (food != null)
+            {
+                storageService.deleteQuietly(food.getImageUrl());
+            }
+
             return Result.success();
         }
         catch (Exception e)
@@ -271,7 +306,7 @@ public class AdminController
         }
     }
 
-    @DeleteMapping("/users/{id}")//删除指定的用户
+    @DeleteMapping("/users/{id}")//删除指定的用户（连同其帖子与 OSS 图片一起清理）
     public Result<Void> deleteUser(@PathVariable Long id, jakarta.servlet.http.HttpSession session)
     {
         if (!isAdmin(session))
@@ -279,7 +314,24 @@ public class AdminController
 
         try
         {
-            userService.deleteUser(id);
+            User operator = (User) session.getAttribute("user");
+            if (operator != null && operator.getId().equals(id))
+            {
+                return Result.error("不能删除当前登录的账号");
+            }
+
+            List<String> objectKeys = userService.deleteUserCompletely(id);
+            if (objectKeys == null)
+            {
+                return Result.error("用户不存在");
+            }
+
+            // 数据库事务已提交，这里再清理 OSS 对象；失败只记日志
+            for (String key : objectKeys)
+            {
+                storageService.deleteQuietly(key);
+            }
+
             return Result.success();
         }
         catch (Exception e)
