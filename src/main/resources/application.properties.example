@@ -44,6 +44,8 @@ audit.sensitive-keywords=
 
 # ===== 阿里云 OSS 图片存储（公共读）=====
 # bucket 需要是"公共读"权限，否则前端拿到的图片地址会 403
+# 不填写 AK/SK 时应用仍可正常启动（降级模式），只是无法上传/删除图片；
+# 内置演示数据的图片是绝对地址，未配置 OSS 也能正常显示
 oss.endpoint=oss-cn-xxx.aliyuncs.com
 oss.bucket=YOUR_BUCKET
 oss.access-key-id=YOUR_ACCESS_KEY_ID

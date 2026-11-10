@@ -62,9 +62,10 @@ public class StorageService {
     @PostConstruct
     void init() {
         if (isBlank(endpoint) || isBlank(bucket) || isBlank(accessKeyId) || isBlank(accessKeySecret)) {
-            throw new IllegalStateException(
-                    "OSS 配置不完整，请检查 application.properties 中的 "
-                            + "oss.endpoint / oss.bucket / oss.access-key-id / oss.access-key-secret");
+            // 降级启动：没有 OSS 凭证也允许应用运行，只是不能上传/删除图片
+            StorageUrlUtil.configure("", keyPrefix);
+            log.warn("OSS 未配置，图片上传/删除不可用；其余功能正常（演示数据中的图片是绝对地址，仍可显示）");
+            return;
         }
 
         String domain = isBlank(publicDomain)
@@ -90,6 +91,10 @@ public class StorageService {
      * @param dir  业务目录，例如 foods / avatars
      */
     public String upload(MultipartFile file, String dir) {
+        if (ossClient == null) {
+            throw new RuntimeException("图片服务未配置，请先在 application.properties 中填写 OSS 信息");
+        }
+
         String extension = extensionOf(file.getOriginalFilename());
         if (extension == null || !ALLOWED_EXTENSIONS.contains(extension)) {
             throw new RuntimeException("只支持 jpg/jpeg/png/webp/gif 格式的图片");
@@ -116,6 +121,9 @@ public class StorageService {
 
     /** 删除对象：只处理本应用 key 前缀的值，失败只记日志，不影响主流程 */
     public void deleteQuietly(String key) {
+        if (ossClient == null) {
+            return;   // 未配置 OSS 时直接跳过
+        }
         if (key == null || key.isBlank()) {
             return;
         }

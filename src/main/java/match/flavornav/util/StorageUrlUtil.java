@@ -44,6 +44,10 @@ public final class StorageUrlUtil {
         if (v.startsWith("http://") || v.startsWith("https://")) {
             return v;
         }
+        if (domain.isEmpty()) {
+            // 未配置 OSS 域名（降级启动）时，无法把 key 拼成可访问地址，交给前端显示占位图
+            return null;
+        }
         String prefix = keyPrefix;
         if (!prefix.isEmpty() && !v.startsWith(prefix)) {
             // 历史本地路径或非法值，不再拼成无效 URL

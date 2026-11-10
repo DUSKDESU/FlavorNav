@@ -178,6 +178,7 @@ http://localhost:8081/
 - 检查 `oss.endpoint`、`oss.bucket`、`oss.access-key-id`、`oss.access-key-secret` 是否填写正确；
 - 确认 bucket 是**公共读**，否则前端拿到的 URL 会 403；
 - 数据里的图片是 object key，换 bucket 后旧图片会失效（需要重新上传）。
+- 未配置 OSS 时应用仍可正常启动（降级模式），只是不能上传/删除图片；**内置演示数据的图片是绝对地址，不配置 OSS 也能显示**。
 
 **Q6：每次启动都会执行初始化脚本吗？**
 
