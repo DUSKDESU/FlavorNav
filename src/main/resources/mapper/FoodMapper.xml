@@ -41,7 +41,14 @@
         SELECT f.*, u.avatar as user_avatar
         FROM food f
         LEFT JOIN user u ON f.user_id = u.id
-        WHERE f.region_id = #{regionId} AND f.status = 1
+        WHERE f.status = 1
+          AND (
+                f.region_id = #{regionId}
+                OR f.region_id IN (
+                    SELECT id FROM region
+                    WHERE path LIKE CONCAT((SELECT path FROM region WHERE id = #{regionId}), '/%')
+                )
+              )
         ORDER BY f.create_time DESC
     </select>
 
@@ -81,7 +88,10 @@
             ))
         </if>
         <if test="regionId != null">
-            AND f.region_id = #{regionId}
+            AND (
+                  f.region_id = #{regionId}
+                  OR r.path LIKE CONCAT((SELECT path FROM region WHERE id = #{regionId}), '/%')
+                )
         </if>
         <if test="types != null and types != ''">
             AND f.type IN
@@ -146,6 +156,11 @@
 
     <delete id="deleteById">
         DELETE FROM food WHERE id = #{id}
+    </delete>
+
+    <!-- 删除某个用户发布的全部帖子；comment 与 food_favorite 由外键 ON DELETE CASCADE 一并清理 -->
+    <delete id="deleteByUserId">
+        DELETE FROM food WHERE user_id = #{userId}
     </delete>
 
 </mapper>

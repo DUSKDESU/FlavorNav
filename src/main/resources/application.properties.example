@@ -2,10 +2,19 @@ spring.application.name=FlavorNav
 
 # ===== MySQL 数据库配置 =====
 # 复制本文件为 application.properties，并填写自己的真实地址/账号/密码
-spring.datasource.url=jdbc:mysql://localhost:3306/flavor_nav?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+# createDatabaseIfNotExist=true：库不存在时由驱动自动创建，配合下方启动初始化使用
+spring.datasource.url=jdbc:mysql://localhost:3306/flavor_nav?useUnicode=true&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&createDatabaseIfNotExist=true
 spring.datasource.username=root
 spring.datasource.password=YOUR_DB_PASSWORD
 spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+# ===== 启动时自动初始化数据库（Spring 原生，无需 Flyway）=====
+# 空库：建表 + 灌数据；已有数据：CREATE TABLE IF NOT EXISTS + INSERT IGNORE 自动跳过
+spring.sql.init.mode=always
+spring.sql.init.schema-locations=classpath:db/schema.sql
+spring.sql.init.data-locations=classpath:db/data.sql
+spring.sql.init.encoding=UTF-8
+spring.sql.init.continue-on-error=false
 
 # ===== MyBatis 配置 =====
 mybatis.mapper-locations=classpath:mapper/*.xml
@@ -32,3 +41,16 @@ deepseek.model=deepseek-chat
 
 # ===== 敏感词自动审核（逗号分隔，留空则使用代码默认值）=====
 audit.sensitive-keywords=
+
+# ===== 阿里云 OSS 图片存储（公共读）=====
+# bucket 需要是"公共读"权限，否则前端拿到的图片地址会 403
+# 不填写 AK/SK 时应用仍可正常启动（降级模式），只是无法上传/删除图片；
+# 内置演示数据的图片是绝对地址，未配置 OSS 也能正常显示
+oss.endpoint=oss-cn-xxx.aliyuncs.com
+oss.bucket=YOUR_BUCKET
+oss.access-key-id=YOUR_ACCESS_KEY_ID
+oss.access-key-secret=YOUR_ACCESS_KEY_SECRET
+# 对象 key 统一前缀，建议保持 flavornav/
+oss.key-prefix=flavornav/
+# 访问域名，留空则自动使用 https://{bucket}.{endpoint}
+oss.public-domain=
